@@ -26,6 +26,7 @@ public:
     ~InputDataManager();
 
     bool openInputFile();
+    bool closeInputFile();
     bool checkFileFormatting();
 
     bool readTarg( QTextStream & in, unsigned int & num );

@@ -25,6 +25,16 @@ bool InputDataManager::openInputFile()
     return true;
 }
 
+bool InputDataManager::closeInputFile()
+{
+    if( m_file->isOpen() )
+    {
+        m_file->close();
+        return true;
+    }
+    return false;
+}
+
 bool InputDataManager::checkFileFormatting()
 {
     bool allCorrect = true;
@@ -320,7 +330,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
             {
                 qCritical() << endl << "Wrong [LIMI] points count received: expected "
                             << expNum << ", got " << localNum - 2
-                            << ". Difference: " << qAbs(  expNum - localNum - 2 );
+                            << ". Difference: " << qAbs(  expNum - ( localNum - 2 ) );
 
                 allCorrect = false;
             }
@@ -376,7 +386,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                 {
                     qCritical() << num << " [LIMI]->invalid X and Y: " << line;
                 }
-                else //got new column with invalid Y data or gor old column new row with invalid X Y data?
+                else //got new column with invalid Y data or old column new row with invalid X Y data?
                 {
                     qCritical() << num << " [LIMI]->missed point(s): "<< line;
                 }
@@ -387,7 +397,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
             {
                 if( x > xPrevious )
                 {
-                    if( indY < numY - 1) //cathed missed points from previous column
+                    if( indY < numY - 1) //catched missed points from previous column
                     {
                         for( indY; indY < numY; indY++ )
                         {
@@ -492,27 +502,29 @@ void InputDataManager::checkTargetsCoords()
     if( m_targets.empty() )
         return;
 
-    for( Target * t : m_targets )
+    for( QList <Target *>::iterator t = m_targets.begin(); t != m_targets.end(); t++ )
     {
-        float tX = t->getX();
-        float tY = t->getY();
+        float tX = (*t)->getX();
+        float tY = (*t)->getY();
 
         if( !( ( tX >= m_x0Coord ) && ( tX <= m_xMaxCoord )
          && ( tY >= m_y0Coord ) && ( tY <= m_yMaxCoord ) ) )
         {
-            qCritical() << t->getlineNum() << " [LIMI] out of bounds. Limits: "
+            qCritical() << (*t)->getlineNum() << " [LIMI] out of bounds. Limits: "
                         << "[" << m_x0Coord << ", " << m_y0Coord << "].  "
                         << "[" << m_xMaxCoord << ", " << m_yMaxCoord << "]"
                         << "Got: "
                         << "[" << tX << ", " << tY << "] ";
+            m_targets.erase( t );
         }
 
-        m_targets.removeOne( t );
+
     }
 }
 
 InputDataManager::~InputDataManager()
 {
+    qDeleteAll( m_targets );
     delete m_file;
 }
 

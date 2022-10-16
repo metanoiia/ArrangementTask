@@ -9,6 +9,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_inDataMngr = new InputDataManager;
     m_inDataMngr->openInputFile();
     m_inDataMngr->checkFileFormatting();
+    m_inDataMngr->closeInputFile();
 }
 
 MainWindow::~MainWindow()
