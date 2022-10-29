@@ -15,7 +15,8 @@ private:
 
     unsigned int m_lineNum;
 public:
-    Target( float xCoord, float yCoord, float radius, unsigned int price, unsigned int lineNum );
+    Target( float xCoord, float yCoord, float radius,
+            unsigned int price, unsigned int lineNum );
     ~Target();
 
     float getX();

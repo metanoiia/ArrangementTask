@@ -6,6 +6,7 @@
 #include <QTextStream>
 #include <QList>
 #include "target/target.h"
+#include "cell/cell.h"
 
 class InputDataManager : public QObject
 {
@@ -19,7 +20,11 @@ private:
     float m_x0Coord;
     float m_y0Coord;
 
-    QList < Target *> m_targets;
+    float m_dx;
+    float m_dy;
+
+    QList < Target * > m_targets;
+    QVector < Cell * >  m_grid;
 
 public:
     InputDataManager();
