@@ -5,6 +5,7 @@
 #include <QFile>
 #include <QTextStream>
 #include <QList>
+#include <QMessageBox>
 #include "target/target.h"
 #include "cell/cell.h"
 
@@ -26,6 +27,10 @@ private:
     QList < Target * > m_targets;
     QVector < Cell * >  m_grid;
 
+    int m_tubeCost;
+    int m_padCost;
+    int m_padsNum;
+
 public:
     InputDataManager();
     ~InputDataManager();
@@ -40,6 +45,10 @@ public:
     bool readLimi( QTextStream & in, unsigned int & num );
 
     void checkTargetsCoords();
+
+    int getTubeCost();
+    int getPadCost();
+    int getPadsNum();
 };
 
 namespace KeyWords

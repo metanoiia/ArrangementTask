@@ -1,20 +1,35 @@
 #ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
-#include <QMainWindow>
+#include <QWidget>
 #include "inputDataManager/inputdatamanager.h"
+#include "graphicsView/graphicsview.h"
+#include <QGraphicsScene>
+#include <QHBoxLayout>
+#include <QVBoxLayout>
+#include <QPushButton>
+#include <QGroupBox>
 
-QT_BEGIN_NAMESPACE
-namespace Ui { class MainWindow; }
-QT_END_NAMESPACE
 
-class MainWindow : public QMainWindow
+class MainWindow : public QWidget
 {
     Q_OBJECT
 private:
-    Ui::MainWindow * ui;
+    QGraphicsScene * m_scene;
+    GraphicsView * m_view;
 
     InputDataManager * m_inDataMngr;
+
+    QHBoxLayout * m_buttonLayout;
+    QVBoxLayout * m_mainLayout;
+
+    QPushButton * m_readFileBtn;
+    QPushButton * m_calculateBtn;
+    QPushButton * m_resetBtn;
+    QPushButton * m_exitBtn;
+
+    int m_height;
+    int m_width;
 
 public:
     MainWindow(QWidget *parent = nullptr);
@@ -22,6 +37,9 @@ public:
 
     InputDataManager * getInDataMngr();
 
+public slots:
 
+    void onReadBtnClicked();
+    void onExitBtnClicked();
 };
 #endif // MAINWINDOW_H

@@ -2,7 +2,6 @@
 #include <QDebug>
 #include <QFileDialog>
 #include <QtMath>
-#include <QMessageBox>
 #include <QStyle>
 #include <QDesktopWidget>
 
@@ -12,7 +11,10 @@ InputDataManager::InputDataManager():
     m_x0Coord( 0.0 ),
     m_y0Coord( 0.0 ),
     m_dx( 0.0 ),
-    m_dy( 0.0 )
+    m_dy( 0.0 ),
+    m_tubeCost( 0 ),
+    m_padCost( 0 ),
+    m_padsNum( 0 )
 {
     m_file = new QFile;
 }
@@ -170,6 +172,9 @@ bool InputDataManager::readPads( QTextStream & in, unsigned int & num )
 
     QString line;
 
+    int padsNum,
+        padCost;
+
     while( !in.atEnd() )
     {
         line = in.readLine();
@@ -201,21 +206,28 @@ bool InputDataManager::readPads( QTextStream & in, unsigned int & num )
             qCritical() << num << " [PADS]->pads line must have two parameters: " << line;
             allCorrect = false;
         }
-
-        if( padsParams.at( 0 ).toFloat() <= 0 )
+        else
         {
-            qCritical() << num << " [PADS]->invalid maximum target count at: " << line;
-            allCorrect =  false;
-        }
-        if( padsParams.at( 1 ).toFloat() <= 0 )
-        {
-            qCritical() << num << " [PADS]->invalid cost at: " << line;
-            allCorrect =  false;
+            padsNum = padsParams.at( 0 ).toInt();
+            padCost = padsParams.at( 1 ).toInt();
+
+            if( padsNum <= 0 )
+            {
+                qCritical() << num << " [PADS]->invalid maximum target count at: " << line;
+                allCorrect =  false;
+            }
+            if( padCost <= 0 )
+            {
+                qCritical() << num << " [PADS]->invalid cost at: " << line;
+                allCorrect =  false;
+            }
         }
 
-        //(not implemented)
-        //*if allCorrect still contains 'true' then init PADS object*
-        //*else just continue checking others lines*
+        if( allCorrect )
+        {
+            m_padCost = padCost;
+            m_padsNum = padsNum;
+        }
     }
 
     return allCorrect;
@@ -227,6 +239,8 @@ bool InputDataManager::readTube( QTextStream & in, unsigned int & num )
     unsigned int localNum = 0; // used for lines in block TUBE counting
 
     QString line;
+
+    int tubeCost;
 
     while( !in.atEnd() )
     {
@@ -260,15 +274,16 @@ bool InputDataManager::readTube( QTextStream & in, unsigned int & num )
             allCorrect =  false;
         }
 
-        if( tubeParams.at( 0 ).toFloat() <= 0 )
+        tubeCost = tubeParams.at( 0 ).toInt();
+
+        if( tubeCost <= 0 )
         {
             qCritical() << num << " [TUBE]->invalid cost at: " << line;
             allCorrect =  false;
         }
 
-        //(not implemented)
-        //*if allCorrect still contains 'true' then init TUBE object*
-        //*else just continue checking others lines*
+        if( allCorrect )
+            m_tubeCost = tubeCost;
     }
 
     return allCorrect;
@@ -382,7 +397,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
         limiParams = line.split( " ",  QString::SkipEmptyParts );
 
-        if( limiParams.size() != 3 )
+        if( limiParams.size() != KeyWords::LIMI_PARAM_CNT )
         {
             qCritical() << num << " [LIMI]->invalid parameters number: " << line;
             allCorrect = false;
@@ -407,13 +422,13 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
         }
         else
         {
-            if( ( y == yPrevious ) && ( x == xPrevious ) ) //duplicate
+            if( ( fabs( y - yPrevious ) < 0.001 ) && ( fabs( x - xPrevious ) < 0.001 ) ) //duplicate
             {
                 qCritical() << num << " [LIMI]->got duplicated coordinates of previous cell: " << line;
                 allCorrect = false;
             }
 
-            else if( ( y == yPrevious ) && ( x != xPrevious ) ) // got something very strange
+            else if( ( fabs( y - yPrevious ) < 0.001 ) && ( fabs( x - xPrevious ) >= 0.001 ) ) // got something very strange
             {
                 if( indY < numY )
                 {
@@ -426,7 +441,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                 allCorrect = false;
             }
 
-            else if( ( y != yPrevious ) && ( x != xPrevious ) ) //new column new row?
+            else if( ( fabs( y - yPrevious ) >= 0.001 ) && ( fabs( x - xPrevious ) >= 0.001 ) ) //new column new row?
             {
                 if( x > xPrevious )
                 {
@@ -467,7 +482,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                         //allCorrect = false;
                     }
 
-                    if( dX == 0.0 )
+                    if( fabs( dX ) < 0.001 )
                     {
                         dX = x - xPrevious;
                         m_dx = dX;
@@ -478,7 +493,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                     }
                     else
                     {
-                        if( x - xPrevious != dX )
+                        if( fabs( fabs( x - xPrevious ) - dX ) >= 0.001 )
                         {
                             qCritical() << num << " [LIMI]->X coordinate recedes unevenly: " << line;
                             allCorrect = false;
@@ -507,7 +522,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
             }
 
-            else if( ( y != yPrevious ) && ( x == xPrevious ) ) // old column new row?
+            else if( ( fabs( y - yPrevious ) >= 0.001 ) && ( fabs( x - xPrevious ) < 0.001 ) ) // old column new row?
             {
                 if( y > yPrevious )
                 {
@@ -521,7 +536,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                     }
                     else
                     {
-                        if( y - yPrevious != dY )
+                        if( fabs( fabs( y - yPrevious ) - dY ) >= 0.001 )
                         {
                             qCritical() << num << " [LIMI]->Y coordinate recedes unevenly: " << line;
 
@@ -588,7 +603,6 @@ void InputDataManager::checkTargetsCoords()
                         << "[" << tX << ", " << tY << "] ";
             m_targets.erase( t );
         }
-
 
     }
 }

@@ -26,7 +26,6 @@ void messageHandler( QtMsgType type, const QMessageLogContext & context, const Q
     }
 
     out << endl;
-
     out.flush();
 }
 
@@ -34,7 +33,7 @@ int main(int argc, char *argv[])
 {
     logFile.reset( new QFile( QDir::currentPath() + "/logFile.log" ) );
 
-    logFile.data()->open( QFile::Append | QFile::Text  );
+    logFile.data()->open( QFile::WriteOnly | QFile::Text );
 
     qInstallMessageHandler( messageHandler );
 

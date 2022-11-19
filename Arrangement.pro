@@ -10,6 +10,7 @@ CONFIG += c++11
 
 SOURCES += \
     cell/cell.cpp \
+    graphicsView/graphicsview.cpp \
     inputDataManager/inputdatamanager.cpp \
     main/main.cpp \
     main/mainwindow.cpp \
@@ -17,12 +18,12 @@ SOURCES += \
 
 HEADERS += \
     cell/cell.h \
+    graphicsView/graphicsview.h \
     inputDataManager/inputdatamanager.h \
     main/mainwindow.h \
     target/target.h
 
 FORMS += \
-    main/mainwindow.ui \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
