@@ -21,8 +21,11 @@ InputDataManager::InputDataManager():
 
 bool InputDataManager::openInputFile()
 {
+    resetData();
+
     QString filePath = QFileDialog::getOpenFileName( nullptr, tr( "Open input data file" ),
                                   "", tr( "TXT files (*.txt)" ));
+
     if( !filePath.isNull() )
     {
         m_file->setFileName( filePath );
@@ -35,6 +38,32 @@ bool InputDataManager::openInputFile()
         }
     }
     return true;
+}
+
+void InputDataManager::resetData()
+{
+    if( !m_targets.isEmpty() )
+    {
+        while ( m_targets.count() )
+             delete m_targets.takeLast();
+    }
+
+    if( !m_grid.isEmpty() )
+    {
+        while ( m_grid.count() )
+             delete m_grid.takeLast();
+    }
+
+    m_xMaxCoord = 0.0;
+    m_yMaxCoord =  0.0;
+    m_x0Coord = 0.0;
+    m_y0Coord = 0.0;
+    m_dx = 0.0;
+    m_dy = 0.0;
+
+    m_tubeCost = 0;
+    m_padCost = 0;
+    m_padsNum = 0;
 }
 
 bool InputDataManager::closeInputFile()
@@ -337,6 +366,8 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
     float xMax = 0.0,      yMax = 0.0;
     float xPrevious = 0.0, yPrevious = 0.0;
 
+    static const float eps = 0.001; // to compare floating point numbers
+
     unsigned int indX = 0, indY = 0;
 
     while( !in.atEnd() )
@@ -361,7 +392,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                         qCritical() << num << " [LIMI]->missed one point. Expected : "<< x
                                     << " " << calculatedY << " " <<"/*cost*/. Got: " << line;
 
-                        m_grid.append( new Cell( x, calculatedY, false ) );
+                        m_grid.append( new Cell( x, calculatedY, false, dX, dY ) );
                     }
                 }
 
@@ -419,16 +450,19 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
             y0 = y;
             xPrevious = x;
             yPrevious = y;
+
+            dX = 2 * x;
+            dY = 2 * y;
         }
         else
         {
-            if( ( fabs( y - yPrevious ) < 0.001 ) && ( fabs( x - xPrevious ) < 0.001 ) ) //duplicate
+            if( ( fabs( y - yPrevious ) < eps ) && ( fabs( x - xPrevious ) < eps ) ) //duplicate
             {
                 qCritical() << num << " [LIMI]->got duplicated coordinates of previous cell: " << line;
                 allCorrect = false;
             }
 
-            else if( ( fabs( y - yPrevious ) < 0.001 ) && ( fabs( x - xPrevious ) >= 0.001 ) ) // got something very strange
+            else if( ( fabs( y - yPrevious ) < eps ) && ( fabs( x - xPrevious ) >= eps ) ) // got something very strange
             {
                 if( indY < numY )
                 {
@@ -441,7 +475,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                 allCorrect = false;
             }
 
-            else if( ( fabs( y - yPrevious ) >= 0.001 ) && ( fabs( x - xPrevious ) >= 0.001 ) ) //new column new row?
+            else if( ( fabs( y - yPrevious ) >= eps ) && ( fabs( x - xPrevious ) >= eps ) ) //new column new row?
             {
                 if( x > xPrevious )
                 {
@@ -454,7 +488,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
                             qCritical() << num << " [LIMI]->missed one point. Expected : "<< calculatedX
                                         << " " << calculatedY << " " <<"/*cost*/. Got: " << line;
-                            m_grid.append( new Cell( calculatedX, calculatedY, false ) );
+                            m_grid.append( new Cell( calculatedX, calculatedY, false, dX , dY ) );
 
                         }
                         yPrevious = y0;
@@ -476,24 +510,23 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                             qCritical() << num << " [LIMI]->missed one point. Expected : "<< x
                                         << " " << calculatedY << " " <<"/*cost*/. Got: " << line;
 
-                            m_grid.append( new Cell( x, calculatedY, false ) );
+                            m_grid.append( new Cell( x, calculatedY, false, dX, dY ) );
                         }
 
-                        //allCorrect = false;
                     }
 
-                    if( fabs( dX ) < 0.001 )
+                    if( ( indX == 1 ) && ( indY == 0 ) )
                     {
                         dX = x - xPrevious;
                         m_dx = dX;
-                        xMax = x0 + dX * numX;
+                        xMax = dX * numX - dX / 2;
                         xPrevious = x;
                         yPrevious = y;
 
                     }
                     else
                     {
-                        if( fabs( fabs( x - xPrevious ) - dX ) >= 0.001 )
+                        if( fabs( fabs( x - xPrevious ) - dX ) >= eps )
                         {
                             qCritical() << num << " [LIMI]->X coordinate recedes unevenly: " << line;
                             allCorrect = false;
@@ -522,21 +555,21 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
             }
 
-            else if( ( fabs( y - yPrevious ) >= 0.001 ) && ( fabs( x - xPrevious ) < 0.001 ) ) // old column new row?
+            else if( ( fabs( y - yPrevious ) >= eps ) && ( fabs( x - xPrevious ) < eps ) ) //got old column new row?
             {
                 if( y > yPrevious )
                 {
-                    if( dY == 0.0 )
+                    if( ( indX == 0 ) && ( indY == 1 ) )
                     {
                         dY = y - yPrevious;
                         m_dy = dY;
-                        yMax = y0 + dY * numY;
+                        yMax = dY * numY - dY / 2;
                         xPrevious = x;
                         yPrevious = y;
                     }
                     else
                     {
-                        if( fabs( fabs( y - yPrevious ) - dY ) >= 0.001 )
+                        if( fabs( fabs( y - yPrevious ) - dY ) >= eps )
                         {
                             qCritical() << num << " [LIMI]->Y coordinate recedes unevenly: " << line;
 
@@ -549,10 +582,8 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                                 qCritical() << num << " [LIMI]->missed one point. Expected : "<< x
                                             << " " << calculatedY << " " <<"int cost. Got: " << line;
 
-                                m_grid.append( new Cell( x, calculatedY, false ) );
+                                m_grid.append( new Cell( x, calculatedY, false, dX, dY ) );
                             }
-
-                            //allCorrect = false;
 
                         }
 
@@ -576,7 +607,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
         }
 
         if( allCorrect )
-            m_grid.append( new Cell( x, y, cost <= maxCost ) );
+            m_grid.append( new Cell( x, y, cost <= maxCost, dX, dY ) );
 
         indY++;
     }
@@ -609,10 +640,37 @@ void InputDataManager::checkTargetsCoords()
 
 InputDataManager::~InputDataManager()
 {
-    qDeleteAll( m_targets );
-    qDeleteAll( m_grid );
+    while ( m_grid.count() )
+         delete m_grid.takeLast();
+
+    while ( m_targets.count() )
+         delete m_targets.takeLast();
+
     delete m_file;
 }
 
+const QVector < Cell * > & InputDataManager::getGrid() const
+{
+    return m_grid;
+}
 
+float InputDataManager::getXMaxGrid() const
+{
+    return m_xMaxCoord + m_dx / 2;
+}
+
+float InputDataManager::getYMaxGrid() const
+{
+    return m_yMaxCoord + m_dy / 2;
+}
+
+float InputDataManager::getX0Grid() const
+{
+    return m_x0Coord - m_dx / 2;
+}
+
+float InputDataManager::getY0Grid() const
+{
+    return m_y0Coord - m_dy / 2;
+}
 

@@ -1,8 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-
-const float SCALE_X = 0.75;
-const float SCALE_Y = 0.75;
+#include <QDebug>
 
 MainWindow::MainWindow( QWidget *parent ):
     QWidget( parent ),
@@ -14,18 +12,11 @@ MainWindow::MainWindow( QWidget *parent ):
     m_view = new GraphicsView( this );
     m_scene = new QGraphicsScene( this );
 
-    int sceneWidth = m_width * SCALE_X;
-    int sceneHeight = m_height * SCALE_Y;
+    setGeometry(0, 0, m_width, m_height);
 
-    m_view->setSceneRect( 0, 0, sceneWidth, sceneHeight );
     m_view->setHorizontalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     m_view->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOff );
     m_view->setScene( m_scene );
-
-    m_scene->addRect( m_view->sceneRect(),
-                      QPen(Qt::black, 1, Qt::DashDotLine, Qt::RoundCap, Qt::RoundJoin) ); //test
-
-    m_scene->addEllipse( 300, 300, 30, 30 ); //test
 
     m_readFileBtn = new QPushButton( "Read from file" );
     m_resetBtn = new QPushButton("Reset");
@@ -45,29 +36,81 @@ MainWindow::MainWindow( QWidget *parent ):
 
     setLayout( m_mainLayout );
 
-    m_calculateBtn->setEnabled( false );
+    disableBtns();
 
     connect( m_readFileBtn, &QPushButton::clicked, this, &MainWindow::onReadBtnClicked );
     connect( m_exitBtn, &QPushButton::clicked, this, &MainWindow::onExitBtnClicked );
+    connect( m_resetBtn, &QPushButton::clicked, this, &MainWindow::onResetBtnClicked );
+}
+
+void MainWindow::disableBtns()
+{
+    m_calculateBtn->setEnabled( false );
+    m_resetBtn->setEnabled( false );
+}
+
+void MainWindow::enableBtns()
+{
+    m_calculateBtn->setEnabled( true );
+    m_resetBtn->setEnabled( true );
 }
 
 void MainWindow::onReadBtnClicked()
 {
+    m_scene->clear();
+
     m_inDataMngr->openInputFile();
     if( !m_inDataMngr->checkFileFormatting() )
     {
         m_calculateBtn->setEnabled( false );
+
+        m_inDataMngr->resetData();
 
         QMessageBox::critical( this, tr( "Input error" ),
                                tr( "Errors found in input file.\n"
                                    "Please check log file"),
                                QMessageBox::Ok,
                                QMessageBox::Ok );
+
     }
     else
-        m_calculateBtn->setEnabled( true );
+    {
+        for( Cell * cell : m_inDataMngr->getGrid() )
+        {
+            m_scene->addItem( new CellItem( *cell ) );
+        }
+
+        m_scene->setSceneRect( m_inDataMngr->getX0Grid(),
+                               m_inDataMngr->getY0Grid(),
+                               m_inDataMngr->getXMaxGrid(),
+                               m_inDataMngr->getYMaxGrid() );
+
+        qDebug() << "sceneRect" << m_scene->sceneRect();
+
+        m_view->fitInView( m_scene->sceneRect(), Qt::KeepAspectRatio );
+    }
 
     m_inDataMngr->closeInputFile();
+
+    enableBtns();
+}
+
+void MainWindow::onResetBtnClicked()
+{
+    QMessageBox msgBox;
+
+    msgBox.setText( "All displayed information will be deleted" );
+    msgBox.setInformativeText( "Are you sure you want to clear scene?" );
+    msgBox.setStandardButtons( QMessageBox::Yes | QMessageBox::No );
+    msgBox.setDefaultButton( QMessageBox::No );
+    msgBox.setIcon( QMessageBox::Warning );
+    msgBox.setStyleSheet("QLabel{min-width: 500px;}");
+
+    if( msgBox.exec() == QMessageBox::Yes )
+    {
+        m_scene->clear();
+        disableBtns();
+    }
 }
 
 void MainWindow::onExitBtnClicked()

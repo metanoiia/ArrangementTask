@@ -1,7 +1,7 @@
 #include "graphicsview.h"
 #include <QDebug>
 
-const qreal SCALE_FACTOR = 1.05;
+const qreal SCALE_FACTOR = 1.1;
 
 GraphicsView::GraphicsView( QWidget * parent ):
     QGraphicsView( parent ),
@@ -9,13 +9,13 @@ GraphicsView::GraphicsView( QWidget * parent ):
     m_panStartY( 0 ),
     m_leftButtonPressed( false )
 {
-
+    setCacheMode( QGraphicsView::CacheBackground );
 }
 
 void GraphicsView::wheelEvent( QWheelEvent * event )
 {
-    const ViewportAnchor anchor = resizeAnchor();
-    setResizeAnchor(QGraphicsView::AnchorUnderMouse);
+
+    const QPointF p0Scene = mapToScene( event->pos() );
 
     int angle = event->angleDelta().y();
 
@@ -32,8 +32,11 @@ void GraphicsView::wheelEvent( QWheelEvent * event )
         scale( factor, factor );
     }
 
-    centerOn( mapToScene( event->pos() ) );
-    setResizeAnchor( anchor );
+    const QPointF p1Mouse = mapFromScene( p0Scene );
+    const QPointF move = p1Mouse - event->pos();
+
+    horizontalScrollBar()->setValue( move.x() + horizontalScrollBar()->value() );
+    verticalScrollBar()->setValue( move.y() + verticalScrollBar()->value() );
 
     event->accept();
 }
@@ -56,12 +59,12 @@ void GraphicsView::mousePressEvent( QMouseEvent * event )
     }
 }
 
-void GraphicsView::mouseReleaseEvent(QMouseEvent *event)
+void GraphicsView::mouseReleaseEvent( QMouseEvent *event )
 {
     if ( event->button() == Qt::LeftButton )
     {
         m_leftButtonPressed = false;
-        setCursor(Qt::ArrowCursor);
+        setCursor( Qt::ArrowCursor );
         event->accept();
     }
     else
@@ -71,7 +74,7 @@ void GraphicsView::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
-void GraphicsView::mouseMoveEvent(QMouseEvent *event)
+void GraphicsView::mouseMoveEvent( QMouseEvent *event )
 {
     if ( m_leftButtonPressed )
     {
@@ -84,3 +87,4 @@ void GraphicsView::mouseMoveEvent(QMouseEvent *event)
     else
         event->ignore();
 }
+

@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     logFile.data()->open( QFile::WriteOnly | QFile::Text );
 
-    qInstallMessageHandler( messageHandler );
+    //qInstallMessageHandler( messageHandler );
 
     QApplication a( argc, argv );
     MainWindow w;

@@ -31,6 +31,9 @@ private:
     int m_height;
     int m_width;
 
+    void disableBtns();
+    void enableBtns();
+
 public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
@@ -41,5 +44,6 @@ public slots:
 
     void onReadBtnClicked();
     void onExitBtnClicked();
+    void onResetBtnClicked();
 };
 #endif // MAINWINDOW_H

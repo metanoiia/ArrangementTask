@@ -45,10 +45,19 @@ public:
     bool readLimi( QTextStream & in, unsigned int & num );
 
     void checkTargetsCoords();
+    void resetData();
 
     int getTubeCost();
     int getPadCost();
     int getPadsNum();
+
+    float getXMaxGrid() const;
+    float getYMaxGrid() const;
+
+    float getX0Grid() const;
+    float getY0Grid() const;
+
+    const QVector < Cell * > & getGrid() const;
 };
 
 namespace KeyWords
