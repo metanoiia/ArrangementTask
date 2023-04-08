@@ -31,24 +31,4 @@ private:
     bool m_available;
 };
 
-
-class CellItem : public QObject, public QGraphicsItem
-{
-    Q_OBJECT
-public:
-    CellItem( const Cell & cell );
-    ~CellItem();
-
-    void paint( QPainter * painter,
-                const QStyleOptionGraphicsItem * option,
-                QWidget * widget );
-
-    QRectF boundingRect() const;
-
-private:
-    QRectF   m_boundingRect;
-    QPen   * m_pen;
-    QBrush * m_brush;
-};
-
 #endif // CELL_H

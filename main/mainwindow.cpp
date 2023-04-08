@@ -76,14 +76,19 @@ void MainWindow::onReadBtnClicked()
     else
     {
         for( Cell * cell : m_inDataMngr->getGrid() )
-        {
-            m_scene->addItem( new CellItem( *cell ) );
-        }
+            m_scene->addItem( new GraphicsItem < Cell >( *cell ) );
 
         m_scene->setSceneRect( m_inDataMngr->getX0Grid(),
                                m_inDataMngr->getY0Grid(),
                                m_inDataMngr->getXMaxGrid(),
                                m_inDataMngr->getYMaxGrid() );
+
+        float cellW = m_inDataMngr->getGrid().at( 0 )->getWidth();
+        float cellH = m_inDataMngr->getGrid().at( 0 )->getHeight();
+
+
+        for( Target * target : m_inDataMngr->getTargets() )
+            m_scene->addItem( new GraphicsItem < Target >( *target, cellW, cellH ) );
 
         qDebug() << "sceneRect" << m_scene->sceneRect();
 

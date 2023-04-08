@@ -2,6 +2,7 @@
 #define TARGET_H
 
 #include <QObject>
+#include <QGraphicsItem>
 
 class Target : public QObject
 {
@@ -19,8 +20,13 @@ public:
             unsigned int price, unsigned int lineNum );
     ~Target();
 
-    float getX();
-    float getY();
+    float getX() const;
+    float getY() const;
+    float getR() const;
+
+    void setX( float x );
+    void setY( float y );
+
     unsigned int getlineNum();
 };
 

@@ -619,7 +619,7 @@ void InputDataManager::checkTargetsCoords()
     if( m_targets.empty() )
         return;
 
-    for( QList <Target *>::iterator t = m_targets.begin(); t != m_targets.end(); t++ )
+    for( auto t = m_targets.begin(); t != m_targets.end(); t++ )
     {
         float tX = (*t)->getX();
         float tY = (*t)->getY();
@@ -652,6 +652,11 @@ InputDataManager::~InputDataManager()
 const QVector < Cell * > & InputDataManager::getGrid() const
 {
     return m_grid;
+}
+
+const QVector < Target * > &  InputDataManager::getTargets() const
+{
+    return m_targets;
 }
 
 float InputDataManager::getXMaxGrid() const

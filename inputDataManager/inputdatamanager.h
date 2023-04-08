@@ -24,7 +24,7 @@ private:
     float m_dx;
     float m_dy;
 
-    QList < Target * > m_targets;
+    QVector < Target * > m_targets;
     QVector < Cell * >  m_grid;
 
     int m_tubeCost;
@@ -58,6 +58,7 @@ public:
     float getY0Grid() const;
 
     const QVector < Cell * > & getGrid() const;
+    const QVector < Target * > & getTargets() const;
 };
 
 namespace KeyWords

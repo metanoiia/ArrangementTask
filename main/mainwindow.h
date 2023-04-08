@@ -9,6 +9,7 @@
 #include <QVBoxLayout>
 #include <QPushButton>
 #include <QGroupBox>
+#include "graphicsItem/graphicsitem.h"
 
 
 class MainWindow : public QWidget

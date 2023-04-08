@@ -18,6 +18,7 @@ SOURCES += \
 
 HEADERS += \
     cell/cell.h \
+    graphicsItem/graphicsitem.h \
     graphicsView/graphicsview.h \
     inputDataManager/inputdatamanager.h \
     main/mainwindow.h \

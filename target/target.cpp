@@ -5,27 +5,18 @@ Target::Target( float xCoord, float yCoord, float radius, unsigned int price, un
     m_yCoord ( yCoord ),
     m_radius ( radius ),
     m_price  ( price ),
-    m_lineNum( lineNum )
-{
+    m_lineNum( lineNum ) { }
 
-}
+Target::~Target() { }
 
-Target::~Target()
-{
+float Target::getX() const { return m_xCoord; }
 
-}
+float Target::getY() const { return m_yCoord; }
 
-float Target::getX()
-{
-    return m_xCoord;
-}
+float Target::getR() const { return m_radius; }
 
-float Target::getY()
-{
-    return m_yCoord;
-}
+void Target::setX( float x ) { m_xCoord = x; }
 
-unsigned int Target::getlineNum()
-{
-    return m_lineNum;
-}
+void Target::setY( float y ) { m_yCoord = y; }
+
+unsigned int Target::getlineNum() { return m_lineNum; }
