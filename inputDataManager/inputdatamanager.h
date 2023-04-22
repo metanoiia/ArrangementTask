@@ -31,6 +31,8 @@ private:
     int m_padCost;
     int m_padsNum;
 
+    void report( const QString & msg );
+
 public:
     InputDataManager();
     ~InputDataManager();
@@ -59,6 +61,9 @@ public:
 
     const QVector < Cell * > & getGrid() const;
     const QVector < Target * > & getTargets() const;
+
+signals:
+    void newMsg( const QString & msg );
 };
 
 namespace KeyWords

@@ -19,10 +19,14 @@ InputDataManager::InputDataManager():
     m_file = new QFile;
 }
 
+void InputDataManager::report(const QString & msg)
+{
+    qCritical() << msg;
+    emit newMsg( msg );
+}
+
 bool InputDataManager::openInputFile()
 {
-    resetData();
-
     QString filePath = QFileDialog::getOpenFileName( nullptr, tr( "Open input data file" ),
                                   "", tr( "TXT files (*.txt)" ));
 
@@ -33,9 +37,11 @@ bool InputDataManager::openInputFile()
 
         if( !m_file->isOpen() )
         {
-            qCritical() << "Can't open input file";
+            report( "Can't open input file" );
             return false;
         }
+
+        resetData();
     }
     return true;
 }
@@ -82,7 +88,7 @@ bool InputDataManager::checkFileFormatting()
 
     if( !m_file->isOpen() )
     {
-        qCritical() << "Input file is not opened!";
+        report( "Input file was not opened!" );
         return false;
     }
 
@@ -113,7 +119,7 @@ bool InputDataManager::checkFileFormatting()
         }
         else
         {
-            qCritical() << lineNum  << "Undefined parameter: " << line;
+            report( QString::number( lineNum ) + " Undefined parameter: " + line);
             allCorrect = false;
         }
     }
@@ -124,7 +130,7 @@ bool InputDataManager::checkFileFormatting()
 }
 
 /*reads input data file and checks its formatting,
-  if everything is ok fills the list of targs (now not implemented)
+  if everything is ok fills the list of targs
 */
 bool InputDataManager::readTarg( QTextStream & in, unsigned int & num )
 {
@@ -147,7 +153,7 @@ bool InputDataManager::readTarg( QTextStream & in, unsigned int & num )
        {
            if( localNum == 1 )
            {
-               qCritical() << QString::number( num ) <<" [TARG]->empty TARG list";
+               report( QString::number( num ) + "[TARG]->empty TARG list" )  ;
                return false;
            }
            return allCorrect;
@@ -158,7 +164,7 @@ bool InputDataManager::readTarg( QTextStream & in, unsigned int & num )
 
        if(  targParams.size() != KeyWords::TARG_PARAM_CNT )
        {
-           qCritical() << num <<" [TARG]->TARG parameters count must be equal 4 according to input format: at line " << line;
+           report( QString::number( num ) + " [TARG]->TARG parameters count must be equal 4 according to input format: at line " + line );
            allCorrect = false;
            tarCorrect = false;
        }
@@ -171,13 +177,13 @@ bool InputDataManager::readTarg( QTextStream & in, unsigned int & num )
 
            if( radius <= 0.0 ) //if R <= 0
            {
-               qCritical() << num << " [TARG]->invalid maximum radius at: " << line;
+               report( QString::number( num ) + " [TARG]->invalid maximum radius at: " + line );
                allCorrect = false;
                tarCorrect = false;
            }
            if( price <= 0 ) // if one meter of drilling price <= 0
            {
-               qCritical() << num << " [TARG]->invalid cost at: " << line;
+               report( QString::number( num ) + " [TARG]->invalid cost at: " + line );
                allCorrect = false;
                tarCorrect = false;
            }
@@ -192,7 +198,7 @@ bool InputDataManager::readTarg( QTextStream & in, unsigned int & num )
 }
 
 /*reads input data file and checks its formatting,
-  if everything is ok initializes pads obj (now not implemented)
+  if everything is ok initializes pads parameters
 */
 bool InputDataManager::readPads( QTextStream & in, unsigned int & num )
 {
@@ -213,7 +219,7 @@ bool InputDataManager::readPads( QTextStream & in, unsigned int & num )
 
         if( localNum > 2 )
         {
-             qCritical() << num << " [PADS]->only one pads parameter line is allowed: " << line;
+             report( QString::number( num ) + " [PADS]->only one pads parameter line is allowed: " + line );
              allCorrect = false;
         }
 
@@ -221,7 +227,7 @@ bool InputDataManager::readPads( QTextStream & in, unsigned int & num )
         {
             if( localNum < 2 )
             {
-                 qCritical() << num << " [PADS]->there is no pads parameter line: " << line;
+                 report( QString::number( num ) + " [PADS]->there is no pads parameter line: " + line );
                  allCorrect = false;
             }
 
@@ -232,7 +238,7 @@ bool InputDataManager::readPads( QTextStream & in, unsigned int & num )
 
         if ( padsParams.size() != 2 )
         {
-            qCritical() << num << " [PADS]->pads line must have two parameters: " << line;
+            report( QString::number( num ) + " [PADS]->pads line must have two parameters: " + line );
             allCorrect = false;
         }
         else
@@ -242,12 +248,12 @@ bool InputDataManager::readPads( QTextStream & in, unsigned int & num )
 
             if( padsNum <= 0 )
             {
-                qCritical() << num << " [PADS]->invalid maximum target count at: " << line;
+                report( QString::number( num ) + " [PADS]->invalid maximum target count at: " + line );
                 allCorrect =  false;
             }
             if( padCost <= 0 )
             {
-                qCritical() << num << " [PADS]->invalid cost at: " << line;
+                report( QString::number( num ) + " [PADS]->invalid cost at: " + line );
                 allCorrect =  false;
             }
         }
@@ -280,7 +286,7 @@ bool InputDataManager::readTube( QTextStream & in, unsigned int & num )
 
         if( localNum > 2 )
         {
-             qCritical() << num << " [TUBE]->only one tube parameter line is allowed: " << line;
+             report( QString::number( num ) + " [TUBE]->only one tube parameter line is allowed: " + line );
              allCorrect = false;
         }
 
@@ -288,7 +294,7 @@ bool InputDataManager::readTube( QTextStream & in, unsigned int & num )
         {
             if( localNum < 2 )
             {
-                 qCritical() << num << " [TUBE]->there is no tube parameter line: " << line;
+                 report( QString::number( num ) + " [TUBE]->there is no tube parameter line: " + line );
                  allCorrect = false;
             }
 
@@ -299,7 +305,7 @@ bool InputDataManager::readTube( QTextStream & in, unsigned int & num )
 
         if( tubeParams.size() != 1 )
         {
-            qCritical() << num << " [TUBE]->must have 1 input parameter: " << line;
+            report( QString::number( num ) + " [TUBE]->must have 1 input parameter: " + line );
             allCorrect =  false;
         }
 
@@ -307,7 +313,7 @@ bool InputDataManager::readTube( QTextStream & in, unsigned int & num )
 
         if( tubeCost <= 0 )
         {
-            qCritical() << num << " [TUBE]->invalid cost at: " << line;
+            report( QString::number( num ) + " [TUBE]->invalid cost at: " + line );
             allCorrect =  false;
         }
 
@@ -333,7 +339,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
     if( limiParams.size() != 3 )
     {
-        qCritical() << num << " [LIMI]->invalid parameters number: " << line;
+        report( QString::number( num ) + " [LIMI]->invalid parameters number: " + line );
         return  false;
     }
 
@@ -346,17 +352,17 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
     if( numX <= 0 )
     {
-        qCritical() << num << " [LIMI]->X limits mist be greater than 0: " << line;
+        report( QString::number( num ) + " [LIMI]->X limits mist be greater than 0: " + line );
         return  false;
     }
     if( numY <= 0 )
     {
-        qCritical() << num << " [LIMI]->Y limits mist be greater than 0: " << line;
+        report( QString::number( num ) + " [LIMI]->Y limits mist be greater than 0: " + line );
         return  false;
     }
     if( maxCost <= 0 )
     {
-        qCritical() << num << " [LIMI]->cost limits mist be greater than 0: " << line;
+        report( QString::number( num ) + " [LIMI]->cost limits mist be greater than 0: " + line );
         return  false;
     }
 
@@ -389,16 +395,16 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                     {
                         float calculatedY = indY * dY + y0;
 
-                        qCritical() << num << " [LIMI]->missed one point. Expected : "<< x
-                                    << " " << calculatedY << " " <<"/*cost*/. Got: " << line;
+                        report( QString::number( num ) + " [LIMI]->missed one point. Expected : "+ x
+                                    + " " + calculatedY + " " +"/*cost*/. Got: " + line );
 
                         m_grid.append( new Cell( x, calculatedY, false, dX, dY ) );
                     }
                 }
 
-                qCritical() << endl << "Wrong number of [LIMI] points received: expected "
-                            << expNum << ", got " << ( localNum - 2 )
-                            << ". Difference: " << qAbs(  expNum - ( localNum - 2 ) );
+                report( "Wrong number of [LIMI] points received: expected "
+                        + QString::number( expNum ) + ", got " + QString::number( localNum - 2 )
+                        + ". Difference: " + QString::number(qAbs( expNum - ( localNum - 2 ) ) ) );
 
                 if( allCorrect )
                 {
@@ -430,7 +436,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
         if( limiParams.size() != KeyWords::LIMI_PARAM_CNT )
         {
-            qCritical() << num << " [LIMI]->invalid parameters number: " << line;
+            report( QString::number( num ) + " [LIMI]->invalid parameters number: " + line );
             allCorrect = false;
         }
 
@@ -440,7 +446,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
 
         if( cost <= 0 )
         {
-            qCritical() << num << " [LIMI]->cost value must be greater than 0 : " << line;
+            report( QString::number( num ) + " [LIMI]->cost value must be greater than 0 : " + line );
             allCorrect = false;
         }
 
@@ -458,7 +464,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
         {
             if( ( fabs( y - yPrevious ) < eps ) && ( fabs( x - xPrevious ) < eps ) ) //duplicate
             {
-                qCritical() << num << " [LIMI]->got duplicated coordinates of previous cell: " << line;
+                report( QString::number( num ) + " [LIMI]->got duplicated coordinates of previous cell: " + line );
                 allCorrect = false;
             }
 
@@ -466,11 +472,11 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
             {
                 if( indY < numY )
                 {
-                    qCritical() << num << " [LIMI]->invalid X and Y: " << line;
+                    report( QString::number( num ) + " [LIMI]->invalid X and Y: " + line );
                 }
                 else //got new column with invalid Y data or old column new row with invalid X Y data?
                 {
-                    qCritical() << num << " [LIMI]->missed point(s): "<< line;
+                    report( QString::number( num ) + " [LIMI]->missed point(s): " + line );
                 }
                 allCorrect = false;
             }
@@ -486,8 +492,8 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                             float calculatedX = x - dX;
                             float calculatedY = indY * dY + y0;
 
-                            qCritical() << num << " [LIMI]->missed one point. Expected : "<< calculatedX
-                                        << " " << calculatedY << " " <<"/*cost*/. Got: " << line;
+                            report( QString::number( num ) + " [LIMI]->missed one point. Expected : "+ QString::number( calculatedX )
+                                        + " " + QString::number( calculatedY ) + " " + "/*cost*/. Got: " + line );
                             m_grid.append( new Cell( calculatedX, calculatedY, false, dX , dY ) );
 
                         }
@@ -507,8 +513,8 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                         {
                             float calculatedY = yPrevious + n * dY;
 
-                            qCritical() << num << " [LIMI]->missed one point. Expected : "<< x
-                                        << " " << calculatedY << " " <<"/*cost*/. Got: " << line;
+                            report( QString::number( num ) + " [LIMI]->missed one point. Expected : " + QString::number( x )
+                                        + " " + QString::number( calculatedY ) + " " + "/*cost*/. Got: " + line );
 
                             m_grid.append( new Cell( x, calculatedY, false, dX, dY ) );
                         }
@@ -528,7 +534,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                     {
                         if( fabs( fabs( x - xPrevious ) - dX ) >= eps )
                         {
-                            qCritical() << num << " [LIMI]->X coordinate recedes unevenly: " << line;
+                            report( QString::number( num ) + " [LIMI]->X coordinate recedes unevenly: " + line );
                             allCorrect = false;
                         }
                         else
@@ -541,14 +547,14 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                 }
                 else //incorrect x data
                 {
-                    qCritical() << num << " [LIMI]->X coordinate must be sorted in ascending order: " << line;
+                    report( QString::number( num ) + " [LIMI]->X coordinate must be sorted in ascending order: " + line );
                     allCorrect = false;
                 }
 
 
                 if( indX >= numX )
                 {
-                    qCritical() << num << " [LIMI]->X coordinate out of range, number of raw greater than provided: " << line;
+                    report( QString::number( num ) + " [LIMI]->X coordinate out of range, number of raw greater than provided: " + line );
                     allCorrect = false;
                 }
 
@@ -571,7 +577,7 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                     {
                         if( fabs( fabs( y - yPrevious ) - dY ) >= eps )
                         {
-                            qCritical() << num << " [LIMI]->Y coordinate recedes unevenly: " << line;
+                            report( QString::number( num ) + " [LIMI]->Y coordinate recedes unevenly: " + line );
 
                             int nMissed = qCeil( ( y - yPrevious ) / dY - 1 );
 
@@ -579,8 +585,8 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                             {
                                 float calculatedY = yPrevious + ( n + 1 ) * dY;
 
-                                qCritical() << num << " [LIMI]->missed one point. Expected : "<< x
-                                            << " " << calculatedY << " " <<"int cost. Got: " << line;
+                                report( QString::number( num ) + " [LIMI]->missed one point. Expected : "+ x
+                                            + " " + calculatedY + " " +"int cost. Got: " + line );
 
                                 m_grid.append( new Cell( x, calculatedY, false, dX, dY ) );
                             }
@@ -593,13 +599,13 @@ bool InputDataManager::readLimi( QTextStream & in, unsigned int & num )
                 }
                 else
                 {
-                    qCritical() << num << " [LIMI]->Y coordinate must be sorted in ascending order: " << line;
+                    report( QString::number( num ) + " [LIMI]->Y coordinate must be sorted in ascending order: " + line );
                     allCorrect = false;
                 }
 
                 if( indY >= numY )
                 {
-                    qCritical() << num << " [LIMI]->Y coordinate out of range, number of raw greater than provided: " << line;
+                    report( QString::number( num ) + " [LIMI]->Y coordinate out of range, number of raw greater than provided: " + line );
                     allCorrect = false;
                 }
 
@@ -621,17 +627,17 @@ void InputDataManager::checkTargetsCoords()
 
     for( auto t = m_targets.begin(); t != m_targets.end(); t++ )
     {
-        float tX = (*t)->getX();
-        float tY = (*t)->getY();
+        float tX = ( *t )->getX();
+        float tY = ( *t )->getY();
 
         if( !( ( tX >= m_x0Coord - m_dx / 2 ) && ( tX <= m_xMaxCoord + m_dx / 2 )
          && ( tY >= m_y0Coord - m_dy / 2 ) && ( tY <= m_yMaxCoord + m_dy / 2 ) ) )
         {
-            qCritical() << (*t)->getlineNum() << " [LIMI] out of bounds. Limits: "
-                        << "[" << m_x0Coord - m_dx / 2 << ", " << m_y0Coord - m_dy / 2 << "].  "
-                        << "[" << m_xMaxCoord + m_dx / 2 << ", " << m_yMaxCoord + m_dy / 2 << "]"
-                        << "Got: "
-                        << "[" << tX << ", " << tY << "] ";
+            report( QString::number( ( *t )->getlineNum() ) + " [LIMI] out of bounds. Limits: "
+                        + "[" + QString::number( m_x0Coord - m_dx / 2 ) + ", " + QString::number( m_y0Coord - m_dy / 2 ) + "].  "
+                        + "[" + QString::number( m_xMaxCoord + m_dx / 2 ) + ", " + QString::number( m_yMaxCoord + m_dy / 2 ) + "]"
+                        + "Got: "
+                        + "[" + QString::number( tX ) + ", " + QString::number( tY ) + "]" );
             m_targets.erase( t );
         }
 

@@ -69,6 +69,8 @@ private:
     const float SCALING = 0.3;
     static constexpr size_t colorsNum = 10;
 
+    bool m_showR;
+
     QRectF   m_boundingRect;
     QRectF   m_outgRect;      //small external circle of icon
     QRectF   m_internalgRect; //small internal circle of icon
@@ -95,6 +97,8 @@ private:
     GraphicsItem( const Target & target, const float & w, const float & h )
     {
         colorCounter()++;
+
+        m_showR = false;
 
         float cellWidth = ( w <= h ) ? w * SCALING : h * SCALING;
         float cellHeight = cellWidth;
@@ -144,17 +148,23 @@ private:
         Q_UNUSED( option );
         Q_UNUSED( widget );
 
-        painter->setPen     ( *m_areaPen );
-        painter->drawEllipse( m_center, m_radius, m_radius );
+        if( m_showR )
+        {
+            painter->setPen     ( *m_areaPen );
+            painter->drawEllipse( m_center, m_radius, m_radius );
+        }
 
         painter->setBrush   ( *m_brushOut );
         painter->setPen     ( *m_penOut );
         painter->drawEllipse( m_outgRect );
 
+
         painter->setBrush   ( *m_brushIn );
         painter->setPen     ( *m_penIn );
         painter->drawEllipse( m_internalgRect );
     }
+
+    void showR( bool flag ) { m_showR = flag ? true : false; }
 
     virtual QRectF boundingRect() const override
     {

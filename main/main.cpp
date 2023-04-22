@@ -10,7 +10,7 @@ QScopedPointer < QFile > logFile;
 
 void messageHandler( QtMsgType type, const QMessageLogContext & context, const QString & msg )
 {
-    Q_UNUSED(context);
+    Q_UNUSED( context );
 
     QTextStream out( logFile.data() );
 
@@ -20,7 +20,7 @@ void messageHandler( QtMsgType type, const QMessageLogContext & context, const Q
     {
     case QtInfoMsg:     out << "INFO "; break;
     case QtDebugMsg:    out << "DBG "; break;
-    case QtWarningMsg:  out << "WRN "; break;
+    case QtWarningMsg:  out << "WRN ";  break;
     case QtCriticalMsg: out << "CRITICAL "; break;
     case QtFatalMsg:    out << "FATAL "; break;
     }
@@ -35,7 +35,7 @@ int main(int argc, char *argv[])
 
     logFile.data()->open( QFile::WriteOnly | QFile::Text );
 
-    //qInstallMessageHandler( messageHandler );
+    qInstallMessageHandler( messageHandler );
 
     QApplication a( argc, argv );
     MainWindow w;
