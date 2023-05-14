@@ -3,6 +3,7 @@
 #include <QDebug>
 #include <QSizePolicy>
 #include <QThread>
+#include <iostream>
 
 
 MainWindow::MainWindow( QWidget *parent ):
@@ -55,6 +56,7 @@ MainWindow::MainWindow( QWidget *parent ):
     connect( m_exitBtn, &QPushButton::clicked, this, &MainWindow::onExitBtnClicked );
     connect( m_resetBtn, &QPushButton::clicked, this, &MainWindow::onResetBtnClicked );
     connect( m_showRs, &QCheckBox::clicked, this, &MainWindow::onShowRsClicked );
+    connect( m_calculateBtn, &QPushButton::clicked, this, &MainWindow::onCalculateBtnClicked );
     connect( m_inDataMngr, &InputDataManager::newMsg, this, &MainWindow::gotNewMsg );
 }
 
@@ -199,6 +201,38 @@ void MainWindow::onShowRsClicked( bool checked )
         item->showR( checked );
         item->update();
     }
+}
+
+void MainWindow::onCalculateBtnClicked()
+{
+    using Matrix = std::vector< std::vector < bool > >;
+
+    Matrix adjMatrix = Matrix( m_inDataMngr->getTargets().length(),
+                               std::vector < bool >( m_inDataMngr->getTargets().length(), true ) ); //complete graph
+
+    QVector < Target* > targets = m_inDataMngr->getTargets();
+
+    for( int i = 0; i < targets.length(); i++ )
+    {
+        for( int j = i; j < targets.length(); j++ )
+        {
+            if( !( targets[ i ]->isReachable( targets[ j ] ) ) )
+            {
+              adjMatrix[ i ][ j ]  = false;
+              adjMatrix[ j ][ i ]  = false;
+            }
+        }
+    }
+
+    //dbg
+    for( int i = 0; i < targets.length(); i++ )
+    {
+        for( int j = 0; j < targets.length(); j++ )
+            std::cout << adjMatrix[i][j] << " ";
+
+        std::cout << std::endl;
+    }
+
 }
 
 MainWindow::~MainWindow()

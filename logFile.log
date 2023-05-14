@@ -1,0 +1,9 @@
+"74 [LIMI]->missed one point. Expected : 125 8375 /*cost*/. Got: 375 125 3": CRITICAL 
+"74 [LIMI]->missed one point. Expected : 125 8625 /*cost*/. Got: 375 125 3": CRITICAL 
+"74 [LIMI]->missed one point. Expected : 125 8875 /*cost*/. Got: 375 125 3": CRITICAL 
+"74 [LIMI]->missed one point. Expected : 125 9125 /*cost*/. Got: 375 125 3": CRITICAL 
+"74 [LIMI]->missed one point. Expected : 125 9375 /*cost*/. Got: 375 125 3": CRITICAL 
+"74 [LIMI]->missed one point. Expected : 125 9625 /*cost*/. Got: 375 125 3": CRITICAL 
+"74 [LIMI]->missed one point. Expected : 125 9875 /*cost*/. Got: 375 125 3": CRITICAL 
+"Wrong number of [LIMI] points received: expected 1600, got 1593. Difference: 7": CRITICAL 
+sceneRect QRectF(0,0 10000x10000): DBG 

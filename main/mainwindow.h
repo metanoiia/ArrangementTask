@@ -11,7 +11,7 @@
 #include <QGroupBox>
 #include <QCheckBox>
 #include <QTextEdit>
-#include "logger/logger.h"
+//#include "logger/logger.h"
 #include "graphicsItem/graphicsitem.h"
 
 using GrTargetsVector = QVector < GraphicsItem <Target> * >;
@@ -65,6 +65,7 @@ public slots:
     void onExitBtnClicked();
     void onResetBtnClicked();
     void onShowRsClicked( bool checked );
+    void onCalculateBtnClicked();
     void gotNewMsg( const QString & msg );
 };
 #endif // MAINWINDOW_H

@@ -28,6 +28,8 @@ public:
     void setY( float y );
 
     unsigned int getlineNum();
+
+    bool isReachable( const Target * other );
 };
 
 #endif // TARGET_H
